@@ -1,15 +1,11 @@
 import 'dart:async';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
-import 'package:voice_recognition/RecognitionResult.dart';
-
 import 'voice_recognition_platform_interface.dart';
 
 /// An implementation of [VoiceRecognitionPlatform] that uses method channels.
 class MethodChannelVoiceRecognition extends VoiceRecognitionPlatform {
   /// The method channel used to interact with the native platform.
-  @visibleForTesting
   final methodChannel = const MethodChannel('voice_recognition');
 
   MethodChannelVoiceRecognition() {
@@ -18,9 +14,9 @@ class MethodChannelVoiceRecognition extends VoiceRecognitionPlatform {
 
   Future<dynamic> _handler(MethodCall methodCall) {
     if ("onReturnResult" == methodCall.method) {
-      debugPrint("onReturnResult in Flutter");
-      debugPrint("----------${methodCall.arguments}------------");
-      _recognitionResultController.add(methodCall.arguments.toString());
+      String result = methodCall.arguments.toString();
+      debugPrint("Pass ReturnResult----$result----to Flutter");
+      _recognitionResultController.add(result);
     }
     return Future.value(true);
   }
@@ -30,13 +26,6 @@ class MethodChannelVoiceRecognition extends VoiceRecognitionPlatform {
   @override
   Stream<String> get recognitionResultStream =>
       _recognitionResultController.stream;
-
-  @override
-  Future<String?> getPlatformVersion() async {
-    final version =
-        await methodChannel.invokeMethod<String>('getPlatformVersion');
-    return version;
-  }
 
   @override
   Future<String?> startVoiceRecognition() async {

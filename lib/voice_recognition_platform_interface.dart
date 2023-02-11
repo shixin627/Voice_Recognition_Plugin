@@ -24,10 +24,6 @@ abstract class VoiceRecognitionPlatform extends PlatformInterface {
     _instance = instance;
   }
 
-  Future<String?> getPlatformVersion() {
-    throw UnimplementedError('platformVersion() has not been implemented.');
-  }
-
   Future<String?> startVoiceRecognition() {
     throw UnimplementedError('startVoiceRecognition() has not been implemented.');
   }
@@ -35,7 +31,7 @@ abstract class VoiceRecognitionPlatform extends PlatformInterface {
   Future<String?> stopVoiceRecognition() {
     throw UnimplementedError('stopVoiceRecognition() has not been implemented.');
   }
-
+  
   Stream<String> get recognitionResultStream {
     return const Stream.empty();
   }
