@@ -23,14 +23,16 @@ class MethodChannelVoiceRecognition extends VoiceRecognitionPlatform {
 
   final StreamController<String> _recognitionResultController =
       StreamController.broadcast();
+
   @override
   Stream<String> get recognitionResultStream =>
       _recognitionResultController.stream;
 
   @override
-  Future<String?> startVoiceRecognition() async {
-    final state =
-        await methodChannel.invokeMethod<String>('startVoiceRecognition');
+  Future<String?> startVoiceRecognition(String bluetoothAddress) async {
+    Map<String, dynamic> data = {"bluetoothAddress": bluetoothAddress};
+    final state = await methodChannel.invokeMethod<String>(
+        'startVoiceRecognition', data);
     return state;
   }
 

@@ -28,7 +28,7 @@ class BluetoothVoiceRecognition(private val context: Context) {
         adapter.getProfileProxy(context, object : BluetoothProfile.ServiceListener {
             override fun onServiceConnected(profile: Int, proxy: BluetoothProfile) {
                 headset = proxy as BluetoothHeadset
-
+                println("Start voice recognition on the Bluetooth device $deviceAddress")
                 // Start voice recognition on the Bluetooth device
                 headset!!.startVoiceRecognition(device)
             }

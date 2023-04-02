@@ -1,6 +1,5 @@
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
-import 'RecognitionResult.dart';
 import 'voice_recognition_method_channel.dart';
 
 abstract class VoiceRecognitionPlatform extends PlatformInterface {
@@ -24,7 +23,7 @@ abstract class VoiceRecognitionPlatform extends PlatformInterface {
     _instance = instance;
   }
 
-  Future<String?> startVoiceRecognition() {
+  Future<String?> startVoiceRecognition(String bluetoothAddress) {
     throw UnimplementedError('startVoiceRecognition() has not been implemented.');
   }
 

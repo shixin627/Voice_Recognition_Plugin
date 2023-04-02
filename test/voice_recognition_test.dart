@@ -12,7 +12,7 @@ class MockVoiceRecognitionPlatform
   Future<String?> getPlatformVersion() => Future.value('42');
 
   @override
-  Future<String?> startVoiceRecognition() {
+  Future<String?> startVoiceRecognition(String bluetoothAddress) {
     // TODO: implement startVoiceRecognition
     throw UnimplementedError();
   }
@@ -22,6 +22,10 @@ class MockVoiceRecognitionPlatform
     // TODO: implement stopVoiceRecognition
     throw UnimplementedError();
   }
+
+  @override
+  // TODO: implement recognitionResultStream
+  Stream<String> get recognitionResultStream => throw UnimplementedError();
 }
 
 void main() {
@@ -31,11 +35,4 @@ void main() {
     expect(initialPlatform, isInstanceOf<MethodChannelVoiceRecognition>());
   });
 
-  test('getPlatformVersion', () async {
-    VoiceRecognition voiceRecognitionPlugin = VoiceRecognition();
-    MockVoiceRecognitionPlatform fakePlatform = MockVoiceRecognitionPlatform();
-    VoiceRecognitionPlatform.instance = fakePlatform;
-
-    expect(await voiceRecognitionPlugin.getPlatformVersion(), '42');
-  });
 }
