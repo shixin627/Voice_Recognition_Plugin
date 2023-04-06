@@ -38,6 +38,7 @@ class VoiceRecognitionPlugin : FlutterPlugin, MethodCallHandler,
         RecognizerIntent.LANGUAGE_MODEL_FREE_FORM
     )
     private lateinit var recognizer: SpeechRecognizer
+    private lateinit var bluetoothVoiceRecognition: BluetoothVoiceRecognition
 
     override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
         this.channel = MethodChannel(flutterPluginBinding.binaryMessenger, "voice_recognition")
@@ -48,21 +49,26 @@ class VoiceRecognitionPlugin : FlutterPlugin, MethodCallHandler,
         val arguments = call.arguments
         when (call.method) {
             "startVoiceRecognition" -> {
-                currentActivity?.let {
-                    val bluetoothAddress = (arguments as Map<*, *>)["bluetoothAddress"] as String
-                    BluetoothVoiceRecognition(it).startVoiceRecognition(
-                        bluetoothAddress
-                    )
+                val bluetoothAddress = (arguments as Map<*, *>)["bluetoothAddress"] as String
+                val started = bluetoothVoiceRecognition.startVoiceRecognition(
+                    bluetoothAddress
+                )
+                if (started) {
+                    startRecognition()
+                    result.success("[onMethodCall]Start Voice Recognition")
+                } else {
+                    result.success("[onMethodCall]Bluetooth audio device has not prepared to start voice recognition")
                 }
-                startRecognition()
-                result.success("Start Voice Recognition")
             }
             "stopVoiceRecognition" -> {
-                currentActivity?.let {
-                    BluetoothVoiceRecognition(it).stopVoiceRecognition()
-                }
+                bluetoothVoiceRecognition.stopVoiceRecognition()
                 stopRecognition()
-                result.success("Stop Voice Recognition")
+                result.success("[onMethodCall]Stop Voice Recognition")
+            }
+            "pairBluetoothDeviceByName" -> {
+                val bluetoothName = (arguments as Map<*, *>)["bluetoothName"] as String
+                bluetoothVoiceRecognition.pairBluetoothDeviceByName(bluetoothName)
+                result.success("[onMethodCall]Pair Bluetooth Device By Name:$bluetoothName")
             }
             else -> {
                 result.notImplemented()
@@ -90,6 +96,7 @@ class VoiceRecognitionPlugin : FlutterPlugin, MethodCallHandler,
     }
 
     override fun onDetachedFromActivity() {
+        bluetoothVoiceRecognition.deInit()
         currentActivity = null
     }
 
@@ -107,6 +114,9 @@ class VoiceRecognitionPlugin : FlutterPlugin, MethodCallHandler,
         recognizer.setRecognitionListener(VoiceRecognizer(recognizer, recognitionIntent))
 
         MyObservable.instance.addObserver(this)
+
+        bluetoothVoiceRecognition = BluetoothVoiceRecognition(currentActivity!!, channel)
+        bluetoothVoiceRecognition.init()
     }
 
     override fun onDetachedFromActivityForConfigChanges() {
@@ -146,7 +156,7 @@ class VoiceRecognitionPlugin : FlutterPlugin, MethodCallHandler,
     }
 
     override fun update(o: Observable?, arg: Any?) {
-        Log.d("VoiceRecognitionPlugin", "MyObservable產生變化~${MyObservable.instance.textResult}")
+        Log.d("VoiceRecognitionPlugin", "MyObservable changed~${MyObservable.instance.textResult}")
         channel.invokeMethod("onReturnResult", MyObservable.instance.textResult)
     }
 }

@@ -7,10 +7,10 @@ import android.speech.RecognitionListener
 import android.speech.SpeechRecognizer
 import android.util.Log
 
-class VoiceRecognizer(var recognizer: SpeechRecognizer, var intent: Intent) :
+class VoiceRecognizer(private var recognizer: SpeechRecognizer, var intent: Intent) :
     RecognitionListener {
     var resultText = ""
-    val handler = Handler()
+    private val handler = Handler()
     override fun onResults(results: Bundle) {
         val resList: List<String>? =
             results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
@@ -48,7 +48,7 @@ class VoiceRecognizer(var recognizer: SpeechRecognizer, var intent: Intent) :
 
     override fun onEndOfSpeech() {
         Log.d("RECOGNIZER", "onEndOfSpeech")
-        handler.postDelayed({ // Do something after 5s = 5000ms
+        handler.postDelayed({ // Do something after 1s = 1000ms
             Log.d("RECOGNIZER", "done")
             recognizer.startListening(intent)
         }, 1000)

@@ -17,9 +17,15 @@ class MethodChannelVoiceRecognition extends VoiceRecognitionPlatform {
       String result = methodCall.arguments.toString();
       debugPrint("Pass ReturnResult----$result----to Flutter");
       _recognitionResultController.add(result);
+    } else if ("targetAddress" == methodCall.method) {
+      String address = methodCall.arguments.toString();
+      debugPrint("Pass Target Bluetooth Audio Address---$address---to Flutter");
+      bluetoothAddressCallback?.call(address);
     }
     return Future.value(true);
   }
+  @override
+  void Function(String address)? bluetoothAddressCallback;
 
   final StreamController<String> _recognitionResultController =
       StreamController.broadcast();
@@ -27,6 +33,14 @@ class MethodChannelVoiceRecognition extends VoiceRecognitionPlatform {
   @override
   Stream<String> get recognitionResultStream =>
       _recognitionResultController.stream;
+
+  @override
+  Future<String?> pairBluetoothDeviceByName(String bluetoothName) async {
+    Map<String, dynamic> data = {"bluetoothName": bluetoothName};
+    final state = await methodChannel.invokeMethod<String>(
+        'pairBluetoothDeviceByName', data);
+    return state;
+  }
 
   @override
   Future<String?> startVoiceRecognition(String bluetoothAddress) async {
