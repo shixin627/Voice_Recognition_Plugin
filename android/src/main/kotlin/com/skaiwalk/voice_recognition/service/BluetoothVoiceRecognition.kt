@@ -74,7 +74,13 @@ class BluetoothVoiceRecognition(private val context: Context, private val channe
         checkAdapter()
 
         // Get the target Bluetooth device
-        device = adapter.getRemoteDevice(deviceAddress)
+        device = getBluetoothDeviceByAddress(deviceAddress)
+//        device = adapter.getRemoteDevice(deviceAddress)
+        if (device == null) {
+            targetAddress = deviceAddress
+            discoveryDevice()
+            return false
+        }
 
         // Get the BluetoothHeadset proxy object
         adapter.getProfileProxy(context, object : BluetoothProfile.ServiceListener {
@@ -169,6 +175,10 @@ class BluetoothVoiceRecognition(private val context: Context, private val channe
                         if (paired) {
                             channel.invokeMethod("targetAddress", targetAddress)
                         }
+                    }
+                } else if (scannedDevice.address == targetAddress) {
+                    if (!adapter.bondedDevices.contains(scannedDevice)) {
+                        val paired = pairDevice(scannedDevice)
                     }
                 }
             }
