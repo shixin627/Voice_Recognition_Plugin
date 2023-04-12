@@ -37,6 +37,7 @@ class BluetoothVoiceRecognition(private val context: Context, private val channe
 
     private fun getBluetoothDeviceByAddress(address: String): BluetoothDevice? {
         val pairedDevices: Set<BluetoothDevice> = adapter.bondedDevices
+        Log.d(LOG_TAG, "[getBluetoothDeviceByAddress] pairedDevices = $pairedDevices")
         for (device in pairedDevices) {
             if (device.address.equals(address)) {
                 return device
@@ -47,6 +48,7 @@ class BluetoothVoiceRecognition(private val context: Context, private val channe
 
     private fun getBluetoothDeviceByName(name: String): BluetoothDevice? {
         val pairedDevices: Set<BluetoothDevice> = adapter.bondedDevices
+        Log.d(LOG_TAG, "[getBluetoothDeviceByName] pairedDevices = $pairedDevices")
         for (device in pairedDevices) {
             if (device.name.equals(name)) {
                 return device
@@ -74,13 +76,14 @@ class BluetoothVoiceRecognition(private val context: Context, private val channe
         checkAdapter()
 
         // Get the target Bluetooth device
-        device = getBluetoothDeviceByAddress(deviceAddress)
-//        device = adapter.getRemoteDevice(deviceAddress)
-        if (device == null) {
-            targetAddress = deviceAddress
-            discoveryDevice()
-            return false
-        }
+//        device = getBluetoothDeviceByAddress(deviceAddress)
+//        if (device == null) {
+//            targetAddress = deviceAddress
+//            discoveryDevice()
+//            return false
+//        }
+
+        device = adapter.getRemoteDevice(deviceAddress)
 
         // Get the BluetoothHeadset proxy object
         adapter.getProfileProxy(context, object : BluetoothProfile.ServiceListener {
