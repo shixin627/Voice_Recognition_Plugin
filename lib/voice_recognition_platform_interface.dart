@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
 import 'voice_recognition_method_channel.dart';
+import 'voice_recognition_mode.dart';
 
 abstract class VoiceRecognitionPlatform extends PlatformInterface {
   /// Constructs a VoiceRecognitionPlatform.
@@ -28,15 +29,19 @@ abstract class VoiceRecognitionPlatform extends PlatformInterface {
   void Function(String address)? bluetoothAddressCallback;
 
   Future<String?> pairBluetoothDeviceByName(String bluetoothName) {
-    throw UnimplementedError('pairBluetoothDeviceByName() has not been implemented.');
+    throw UnimplementedError(
+        'pairBluetoothDeviceByName() has not been implemented.');
   }
 
-  Future<String?> startVoiceRecognition(String bluetoothAddress) {
-    throw UnimplementedError('startVoiceRecognition() has not been implemented.');
+  Future<bool> startVoiceRecognition(
+      VoiceRecognitionMode mode, String bluetoothAddress) {
+    throw UnimplementedError(
+        'startVoiceRecognition() has not been implemented.');
   }
 
   Future<String?> stopVoiceRecognition() {
-    throw UnimplementedError('stopVoiceRecognition() has not been implemented.');
+    throw UnimplementedError(
+        'stopVoiceRecognition() has not been implemented.');
   }
 
   Stream<String> get recognitionResultStream {

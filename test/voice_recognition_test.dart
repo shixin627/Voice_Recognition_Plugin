@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:voice_recognition/voice_recognition_mode.dart';
 import 'package:voice_recognition/voice_recognition_platform_interface.dart';
 import 'package:voice_recognition/voice_recognition_method_channel.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
@@ -8,9 +9,9 @@ import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 class MockVoiceRecognitionPlatform
     with MockPlatformInterfaceMixin
     implements VoiceRecognitionPlatform {
-
   @override
-  Future<String?> startVoiceRecognition(String bluetoothAddress) {
+  Future<bool> startVoiceRecognition(
+      VoiceRecognitionMode mode, String bluetoothAddress) {
     // TODO: implement startVoiceRecognition
     throw UnimplementedError();
   }
@@ -36,10 +37,10 @@ class MockVoiceRecognitionPlatform
 }
 
 void main() {
-  final VoiceRecognitionPlatform initialPlatform = VoiceRecognitionPlatform.instance;
+  final VoiceRecognitionPlatform initialPlatform =
+      VoiceRecognitionPlatform.instance;
 
   test('$MethodChannelVoiceRecognition is the default instance', () {
     expect(initialPlatform, isInstanceOf<MethodChannelVoiceRecognition>());
   });
-
 }

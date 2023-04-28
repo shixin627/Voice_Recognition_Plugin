@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'voice_recognition_mode.dart';
 import 'voice_recognition_platform_interface.dart';
 
 class VoiceRecognition {
@@ -11,9 +12,10 @@ class VoiceRecognition {
         .pairBluetoothDeviceByName(bluetoothName);
   }
 
-  Future<String?> startVoiceRecognition(String bluetoothAddress) {
+  Future<bool> startVoiceRecognition(
+      VoiceRecognitionMode mode, String bluetoothAddress) {
     return VoiceRecognitionPlatform.instance
-        .startVoiceRecognition(bluetoothAddress);
+        .startVoiceRecognition(mode, bluetoothAddress);
   }
 
   Future<String?> stopVoiceRecognition() {

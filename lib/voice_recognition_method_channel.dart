@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'voice_recognition_mode.dart';
 import 'voice_recognition_platform_interface.dart';
 
 /// An implementation of [VoiceRecognitionPlatform] that uses method channels.
@@ -24,6 +25,7 @@ class MethodChannelVoiceRecognition extends VoiceRecognitionPlatform {
     }
     return Future.value(true);
   }
+
   @override
   void Function(String address)? bluetoothAddressCallback;
 
@@ -43,11 +45,15 @@ class MethodChannelVoiceRecognition extends VoiceRecognitionPlatform {
   }
 
   @override
-  Future<String?> startVoiceRecognition(String bluetoothAddress) async {
-    Map<String, dynamic> data = {"bluetoothAddress": bluetoothAddress};
-    final state = await methodChannel.invokeMethod<String>(
-        'startVoiceRecognition', data);
-    return state;
+  Future<bool> startVoiceRecognition(
+      VoiceRecognitionMode mode, String bluetoothAddress) async {
+    Map<String, dynamic> data = {
+      "mode": mode.index,
+      "bluetoothAddress": bluetoothAddress
+    };
+    final started =
+        await methodChannel.invokeMethod<bool>('startVoiceRecognition', data);
+    return started ?? false;
   }
 
   @override

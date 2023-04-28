@@ -21,6 +21,7 @@ import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
 import io.flutter.plugin.common.PluginRegistry
 import java.util.*
+import kotlin.properties.Delegates
 
 private const val REQUEST_RECORD_AUDIO_PERMISSION = 200
 
@@ -39,6 +40,7 @@ class VoiceRecognitionPlugin : FlutterPlugin, MethodCallHandler,
     )
     private lateinit var recognizer: SpeechRecognizer
     private lateinit var bluetoothVoiceRecognition: BluetoothVoiceRecognition
+    private var intentMode: Int = 0
 
     override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
         this.channel = MethodChannel(flutterPluginBinding.binaryMessenger, "voice_recognition")
@@ -49,21 +51,39 @@ class VoiceRecognitionPlugin : FlutterPlugin, MethodCallHandler,
         val arguments = call.arguments
         when (call.method) {
             "startVoiceRecognition" -> {
-                val bluetoothAddress = (arguments as Map<*, *>)["bluetoothAddress"] as String
-                val started = bluetoothVoiceRecognition.startVoiceRecognition(
-                    bluetoothAddress
-                )
-                if (started) {
-                    startRecognition()
-                    result.success("[onMethodCall]Start Voice Recognition")
-                } else {
-                    result.success("[onMethodCall]Bluetooth audio device has not prepared to start voice recognition")
+                val arguments = arguments as Map<*, *>
+                val mode = arguments["mode"] as Int
+                val bluetoothAddress = arguments["bluetoothAddress"] as String
+
+                if (!bluetoothVoiceRecognition.startVoiceRecognition(bluetoothAddress)) {
+                    intentMode = 0
+                    result.success(false)
+                    return
                 }
+
+                intentMode = when (mode) {
+                    1 -> {
+                        startRecognition()
+                        result.success(true)
+                        1
+                    }
+                    2 -> {
+                        result.success(true)
+                        2
+                    }
+                    else -> 0
+                }
+
             }
             "stopVoiceRecognition" -> {
-                bluetoothVoiceRecognition.stopVoiceRecognition()
-                stopRecognition()
-                result.success("[onMethodCall]Stop Voice Recognition")
+                if (intentMode == 1) {
+                    bluetoothVoiceRecognition.stopVoiceRecognition()
+                    stopRecognition()
+                    result.success("Stop Voice Recognition to Text")
+                } else if (intentMode == 2) {
+                    bluetoothVoiceRecognition.stopVoiceRecognition()
+                    result.success("Stop Voice Recognition to sound")
+                }
             }
             "pairBluetoothDeviceByName" -> {
                 val bluetoothName = (arguments as Map<*, *>)["bluetoothName"] as String
