@@ -45,6 +45,14 @@ class VoiceRecognitionPlugin : FlutterPlugin, MethodCallHandler,
     override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
         this.channel = MethodChannel(flutterPluginBinding.binaryMessenger, "voice_recognition")
         channel.setMethodCallHandler(this)
+
+        recognizer = SpeechRecognizer.createSpeechRecognizer(flutterPluginBinding.applicationContext)
+        recognizer.setRecognitionListener(VoiceRecognizer(recognizer, recognitionIntent))
+
+        MyObservable.instance.addObserver(this)
+
+        bluetoothVoiceRecognition = BluetoothVoiceRecognition(flutterPluginBinding.applicationContext, channel)
+        bluetoothVoiceRecognition.init()
     }
 
     override fun onMethodCall(call: MethodCall, result: Result) {
@@ -130,13 +138,13 @@ class VoiceRecognitionPlugin : FlutterPlugin, MethodCallHandler,
         binding.addRequestPermissionsResultListener(this)
         requestAudioPermission()
 
-        recognizer = SpeechRecognizer.createSpeechRecognizer(currentActivity)
-        recognizer.setRecognitionListener(VoiceRecognizer(recognizer, recognitionIntent))
-
-        MyObservable.instance.addObserver(this)
-
-        bluetoothVoiceRecognition = BluetoothVoiceRecognition(currentActivity!!, channel)
-        bluetoothVoiceRecognition.init()
+//        recognizer = SpeechRecognizer.createSpeechRecognizer(currentActivity)
+//        recognizer.setRecognitionListener(VoiceRecognizer(recognizer, recognitionIntent))
+//
+//        MyObservable.instance.addObserver(this)
+//
+//        bluetoothVoiceRecognition = BluetoothVoiceRecognition(currentActivity!!, channel)
+//        bluetoothVoiceRecognition.init()
     }
 
     override fun onDetachedFromActivityForConfigChanges() {
