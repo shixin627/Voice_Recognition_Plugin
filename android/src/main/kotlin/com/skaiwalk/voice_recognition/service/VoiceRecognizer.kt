@@ -11,6 +11,7 @@ class VoiceRecognizer(private var recognizer: SpeechRecognizer, var intent: Inte
     RecognitionListener {
     var resultText = ""
     private val handler = Handler()
+    private var idleCount = 0
     override fun onResults(results: Bundle) {
         val resList: List<String>? =
             results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
@@ -19,11 +20,13 @@ class VoiceRecognizer(private var recognizer: SpeechRecognizer, var intent: Inte
             sb.append(res)
             break
         }
+        Log.d("RECOGNIZER", "onResults: $sb")
         resultText = sb.toString()
         if (resultText.isNotEmpty()) {
             MyObservable.instance.setData(resultText)
+            idleCount = 0
         }
-        Log.d("RECOGNIZER", "onResults: $sb")
+
         if (sb.toString() == "下一步") {
             Log.d("RECOGNIZER", "那我就下一步")
         }
@@ -31,6 +34,7 @@ class VoiceRecognizer(private var recognizer: SpeechRecognizer, var intent: Inte
 
     override fun onError(error: Int) {
         Log.d("RECOGNIZER", "Error Code: $error")
+        idleCount++;
     }
 
     override fun onReadyForSpeech(params: Bundle) {
@@ -47,11 +51,17 @@ class VoiceRecognizer(private var recognizer: SpeechRecognizer, var intent: Inte
     }
 
     override fun onEndOfSpeech() {
-        Log.d("RECOGNIZER", "onEndOfSpeech")
-        handler.postDelayed({ // Do something after 1s = 1000ms
-            Log.d("RECOGNIZER", "done")
-            recognizer.startListening(intent)
-        }, 1000)
+        Log.d("RECOGNIZER", "onEndOfSpeech $idleCount")
+        if (idleCount < 10) {
+            handler.postDelayed({ // Do something after 1s = 1000ms
+                Log.d("RECOGNIZER", "done")
+                recognizer.startListening(intent)
+            }, 1000)
+        }
+        else {
+            MyObservable.instance.setData("/cmd/end")
+            idleCount = 0
+        }
     }
 
     override fun onPartialResults(partialResults: Bundle) {

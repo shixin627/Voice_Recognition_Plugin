@@ -18,6 +18,8 @@ class MethodChannelVoiceRecognition extends VoiceRecognitionPlatform {
       String result = methodCall.arguments.toString();
       debugPrint("Pass ReturnResult----$result----to Flutter");
       _recognitionResultController.add(result);
+    } else if ("onReturnCmd" == methodCall.method && methodCall.arguments.toString() == "/cmd/end") {
+      _recognitionResultController.add("/cmd/end");
     } else if ("targetAddress" == methodCall.method) {
       String address = methodCall.arguments.toString();
       debugPrint("Pass Target Bluetooth Audio Address---$address---to Flutter");

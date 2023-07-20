@@ -185,6 +185,12 @@ class VoiceRecognitionPlugin : FlutterPlugin, MethodCallHandler,
 
     override fun update(o: Observable?, arg: Any?) {
         Log.d("VoiceRecognitionPlugin", "MyObservable changed~${MyObservable.instance.textResult}")
+        if (MyObservable.instance.textResult == "/cmd/end") {
+            bluetoothVoiceRecognition.stopVoiceRecognition()
+            stopRecognition()
+            channel.invokeMethod("onReturnCmd", "/cmd/end")
+            return
+        }
         channel.invokeMethod("onReturnResult", MyObservable.instance.textResult)
     }
 }
