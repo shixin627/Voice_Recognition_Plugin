@@ -59,9 +59,7 @@ class MethodChannelVoiceRecognition extends VoiceRecognitionPlatform {
   }
 
   @override
-  Future<String?> stopVoiceRecognition() async {
-    final state =
-        await methodChannel.invokeMethod<String>('stopVoiceRecognition');
-    return state;
+  Future<void> stopVoiceRecognition() async {
+    await methodChannel.invokeMethod<void>('stopVoiceRecognition');
   }
 }

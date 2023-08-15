@@ -39,7 +39,7 @@ abstract class VoiceRecognitionPlatform extends PlatformInterface {
         'startVoiceRecognition() has not been implemented.');
   }
 
-  Future<String?> stopVoiceRecognition() {
+  Future<void> stopVoiceRecognition() {
     throw UnimplementedError(
         'stopVoiceRecognition() has not been implemented.');
   }

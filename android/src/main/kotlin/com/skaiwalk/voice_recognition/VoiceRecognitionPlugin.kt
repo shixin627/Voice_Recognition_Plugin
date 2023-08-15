@@ -87,10 +87,10 @@ class VoiceRecognitionPlugin : FlutterPlugin, MethodCallHandler,
                 if (intentMode == 1) {
                     bluetoothVoiceRecognition.stopVoiceRecognition()
                     stopRecognition()
-                    result.success("Stop Voice Recognition to Text")
+//                    result.success("Stop Voice Recognition to Text")
                 } else if (intentMode == 2) {
                     bluetoothVoiceRecognition.stopVoiceRecognition()
-                    result.success("Stop Voice Recognition to sound")
+//                    result.success("Stop Voice Recognition to sound")
                 }
             }
             "pairBluetoothDeviceByName" -> {

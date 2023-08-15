@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 
 import 'package:flutter/services.dart';
-import 'package:voice_recognition/RecognitionResult.dart';
 import 'package:voice_recognition/voice_recognition.dart';
+import 'package:voice_recognition/voice_recognition_mode.dart';
 
 import 'theme.dart';
 
@@ -42,9 +42,10 @@ class _MyAppState extends State<MyApp> {
   Future<void> startVoiceRecognition(String bluetoothAddress) async {
     String state;
     try {
-      state = await _voiceRecognitionPlugin
-              .startVoiceRecognition(bluetoothAddress) ??
-          'Unknown state';
+      bool successful = await _voiceRecognitionPlugin
+          .startVoiceRecognition(VoiceRecognitionMode.voice2Text, bluetoothAddress);
+      state = successful ?
+          'Successful': 'Failed';
     } on PlatformException {
       state = 'Failed to start voice recognition.';
     }
@@ -59,10 +60,10 @@ class _MyAppState extends State<MyApp> {
   Future<void> stopVoiceRecognition() async {
     String state;
     try {
-      state = await _voiceRecognitionPlugin.stopVoiceRecognition() ??
-          'Unknown state';
+      await _voiceRecognitionPlugin.stopVoiceRecognition();
+      state = 'Successes to stop voice recognition.';
     } on PlatformException {
-      state = 'Failed to stop voice recognition.';
+      state = 'Fail to stop voice recognition.';
     }
 
     if (!mounted) return;

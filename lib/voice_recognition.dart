@@ -18,7 +18,7 @@ class VoiceRecognition {
         .startVoiceRecognition(mode, bluetoothAddress);
   }
 
-  Future<String?> stopVoiceRecognition() {
+  Future<void> stopVoiceRecognition() {
     return VoiceRecognitionPlatform.instance.stopVoiceRecognition();
   }
 
