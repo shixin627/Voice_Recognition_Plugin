@@ -39,7 +39,7 @@ class VoiceRecognitionPlugin : FlutterPlugin, MethodCallHandler,
         RecognizerIntent.EXTRA_LANGUAGE_MODEL,
         RecognizerIntent.LANGUAGE_MODEL_FREE_FORM
     )
-    private lateinit var recognizer: SpeechRecognizer
+//    private lateinit var recognizer: SpeechRecognizer
     private lateinit var bluetoothVoiceRecognition: BluetoothVoiceRecognition
     private var intentMode: Int = 0
 
@@ -47,10 +47,10 @@ class VoiceRecognitionPlugin : FlutterPlugin, MethodCallHandler,
         this.channel = MethodChannel(flutterPluginBinding.binaryMessenger, "voice_recognition")
         channel.setMethodCallHandler(this)
         context = flutterPluginBinding.applicationContext
-        recognizer =
-            SpeechRecognizer.createSpeechRecognizer(context)
-        recognizer.setRecognitionListener(VoiceRecognizer(recognizer, recognitionIntent))
-        MyObservable.instance.addObserver(this)
+//        recognizer =
+//            SpeechRecognizer.createSpeechRecognizer(context)
+//        recognizer.setRecognitionListener(VoiceRecognizer(recognizer, recognitionIntent))
+//        MyObservable.instance.addObserver(this)
 
         bluetoothVoiceRecognition = BluetoothVoiceRecognition()
         bluetoothVoiceRecognition.doInit(context, recognitionCallback)
@@ -177,11 +177,11 @@ class VoiceRecognitionPlugin : FlutterPlugin, MethodCallHandler,
 
     private fun startRecognition() {
         checkAudioPermission()
-        recognizer.startListening(recognitionIntent)
+//        recognizer.startListening(recognitionIntent)
     }
 
     private fun stopRecognition() {
-        recognizer.stopListening()
+//        recognizer.stopListening()
     }
 
     override fun update(o: Observable?, arg: Any?) {
