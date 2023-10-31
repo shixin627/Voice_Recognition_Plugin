@@ -25,4 +25,8 @@ class VoiceRecognition {
   Stream<String> get recognitionResultStream {
     return VoiceRecognitionPlatform.instance.recognitionResultStream;
   }
+
+  Stream<bool> get recognitionStateStream {
+    return VoiceRecognitionPlatform.instance.recognitionStateStream;
+  }
 }

@@ -19,8 +19,7 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  String _bluetoothAddress = "09:53:D2:D2:78:F8";
-  String _state = 'initState';
+  final String _bluetoothAddress = "17:E9:9E:CA:37:52";
   String _textResult = '...';
   bool _isListening = false;
   final _voiceRecognitionPlugin = VoiceRecognition();
@@ -28,33 +27,18 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-    initPlatformState();
-  }
-
-  // Platform messages are asynchronous, so we initialize in an async method.
-  Future<void> initPlatformState() async {
-    // If the widget was removed from the tree while the asynchronous platform
-    // message was in flight, we want to discard the reply rather than calling
-    // setState to update our non-existent appearance.
-    if (!mounted) return;
   }
 
   Future<void> startVoiceRecognition(String bluetoothAddress) async {
     String state;
     try {
-      bool successful = await _voiceRecognitionPlugin
-          .startVoiceRecognition(VoiceRecognitionMode.voice2Text, bluetoothAddress);
-      state = successful ?
-          'Successful': 'Failed';
+      bool successful = await _voiceRecognitionPlugin.startVoiceRecognition(
+          VoiceRecognitionMode.voice2Text, bluetoothAddress);
+      state = successful ? 'Successful' : 'Failed';
     } on PlatformException {
       state = 'Failed to start voice recognition.';
     }
-
-    if (!mounted) return;
-
-    setState(() {
-      _state = state;
-    });
+    debugPrint('startVoiceRecognition: $state');
   }
 
   Future<void> stopVoiceRecognition() async {
@@ -65,25 +49,14 @@ class _MyAppState extends State<MyApp> {
     } on PlatformException {
       state = 'Fail to stop voice recognition.';
     }
-
-    if (!mounted) return;
-
-    setState(() {
-      _state = state;
-    });
+    debugPrint('stopVoiceRecognition: $state');
   }
 
   void toggleVoiceRecognition() {
     if (_isListening == false) {
       startVoiceRecognition(_bluetoothAddress);
-      setState(() {
-        _isListening = true;
-      });
     } else {
       stopVoiceRecognition();
-      setState(() {
-        _isListening = false;
-      });
     }
   }
 
@@ -96,22 +69,48 @@ class _MyAppState extends State<MyApp> {
       darkTheme: ThemeClass.darkTheme,
       home: Scaffold(
         appBar: AppBar(
-          title: const Text('Plugin example app'),
+          title: const Text('Voice Recognition Plugin'),
         ),
         body: Center(
           child: Column(
             children: [
-              const SizedBox(
-                height: 30,
-              ),
-              Text('Statement: $_state\n'),
-              IconButton(
-                  onPressed: toggleVoiceRecognition,
-                  icon: Icon(
-                    Icons.mic,
-                    color: _isListening ? Colors.purpleAccent : Colors.grey,
-                    size: 35,
-                  )),
+              StreamBuilder<bool>(
+                  initialData: _isListening,
+                  stream: _voiceRecognitionPlugin.recognitionStateStream,
+                  builder: (context, snapshot) {
+                    if (snapshot.hasData) {
+                      _isListening = snapshot.data!;
+                    } else {
+                      return const Text('recognitionState: null');
+                    }
+                    return Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            ElevatedButton(
+                              onPressed: (_isListening)
+                                  ? null
+                                  : () {
+                                      startVoiceRecognition(_bluetoothAddress);
+                                    },
+                              child: const Text('Start'),
+                            ),
+                            ElevatedButton(
+                              onPressed: (_isListening)
+                                  ? () {
+                                      stopVoiceRecognition();
+                                    }
+                                  : null,
+                              child: const Text('Stop'),
+                            ),
+                          ],
+                        ),
+                        Text('recognitionState: $_isListening'),
+                      ],
+                    );
+                  }),
+              const Divider(height: 20),
               StreamBuilder<String>(
                   stream: _voiceRecognitionPlugin.recognitionResultStream,
                   builder: (context, snapshot) {
@@ -119,9 +118,8 @@ class _MyAppState extends State<MyApp> {
                         snapshot.data != null) {
                       _textResult = snapshot.data ?? "no text";
                     }
-                    return Text(_textResult,
-                        style: const TextStyle(fontSize: 30));
-                  })
+                    return Text(_textResult, style: const TextStyle());
+                  }),
             ],
           ),
         ),

@@ -14,16 +14,27 @@ class MethodChannelVoiceRecognition extends VoiceRecognitionPlatform {
   }
 
   Future<dynamic> _handler(MethodCall methodCall) {
-    if ("onReturnResult" == methodCall.method) {
-      String result = methodCall.arguments.toString();
-      debugPrint("Pass ReturnResult----$result----to Flutter");
-      _recognitionResultController.add(result);
-    } else if ("onReturnCmd" == methodCall.method && methodCall.arguments.toString() == "/cmd/end") {
-      _recognitionResultController.add("/cmd/end");
-    } else if ("targetAddress" == methodCall.method) {
-      String address = methodCall.arguments.toString();
-      debugPrint("Pass Target Bluetooth Audio Address---$address---to Flutter");
-      bluetoothAddressCallback?.call(address);
+    switch (methodCall.method) {
+      case "onReturnResult":
+        String result = methodCall.arguments.toString();
+        debugPrint("Pass ReturnResult----$result----to Flutter");
+        _recognitionResultController.add(result);
+        break;
+      case "onReturnCmd":
+        if (methodCall.arguments.toString() == "/cmd/end") {
+          _recognitionResultController.add("/cmd/end");
+        }
+        break;
+      case "targetAddress":
+        String address = methodCall.arguments.toString();
+        debugPrint(
+            "Pass Target Bluetooth Audio Address---$address---to Flutter");
+        bluetoothAddressCallback?.call(address);
+        break;
+      case "setRecognitionState":
+        bool status = methodCall.arguments;
+        _recognitionStateController?.add(status);
+        break;
     }
     return Future.value(true);
   }
@@ -33,10 +44,15 @@ class MethodChannelVoiceRecognition extends VoiceRecognitionPlatform {
 
   final StreamController<String> _recognitionResultController =
       StreamController.broadcast();
+  final StreamController<bool> _recognitionStateController =
+      StreamController.broadcast();
 
   @override
   Stream<String> get recognitionResultStream =>
       _recognitionResultController.stream;
+
+  @override
+  Stream<bool> get recognitionStateStream => _recognitionStateController.stream;
 
   @override
   Future<String?> pairBluetoothDeviceByName(String bluetoothName) async {

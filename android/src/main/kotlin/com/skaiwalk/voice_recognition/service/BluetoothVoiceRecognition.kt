@@ -8,19 +8,21 @@ import android.content.IntentFilter
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
-import io.flutter.plugin.common.MethodChannel
+import com.skaiwalk.voice_recognition.VoiceRecognitionCallback
 import java.util.*
 
 private const val LOG_TAG = "BTVoice"
 
-class BluetoothVoiceRecognition(private val context: Context, private val channel: MethodChannel) {
+class BluetoothVoiceRecognition {
     private var headset: BluetoothHeadset? = null
     private var device: BluetoothDevice? = null
     private val adapter: BluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
     private var targetAddress: String = ""
     private var targetName: String = ""
     private var recognitionIntent: Boolean = false
-    fun init() {
+    private lateinit var voiceRecognitionCallback: VoiceRecognitionCallback
+
+    fun doInit(context: Context, callback: VoiceRecognitionCallback) {
         // Register a receiver to listen for Bluetooth headset events
         val filter = IntentFilter()
         filter.addAction(BluetoothHeadset.ACTION_CONNECTION_STATE_CHANGED)
@@ -28,9 +30,10 @@ class BluetoothVoiceRecognition(private val context: Context, private val channe
         filter.addAction(BluetoothDevice.ACTION_FOUND)
 
         context.registerReceiver(mReceiver, filter)
+        voiceRecognitionCallback = callback
     }
 
-    fun deInit() {
+    fun deInit(context: Context) {
         stopVoiceRecognition()
         context.unregisterReceiver(mReceiver)
     }
@@ -64,39 +67,31 @@ class BluetoothVoiceRecognition(private val context: Context, private val channe
             discoveryDevice()
         } else {
             targetAddress = audioDevice.address
-            channel.invokeMethod("targetAddress", targetAddress)
+            voiceRecognitionCallback.setTargetAddress(targetAddress)
         }
     }
 
-    fun startVoiceRecognition(deviceAddress: String): Boolean {
+    fun startVoiceRecognition(context: Context, deviceAddress: String): Boolean {
         if (deviceAddress.isEmpty()) {
             Log.d(LOG_TAG, "[startVoiceRecognition] No address")
             return false
         }
         checkAdapter()
-
-        // Get the target Bluetooth device
-//        device = getBluetoothDeviceByAddress(deviceAddress)
-//        if (device == null) {
-//            targetAddress = deviceAddress
-//            discoveryDevice()
-//            return false
-//        }
-
         device = adapter.getRemoteDevice(deviceAddress)
-
         // Get the BluetoothHeadset proxy object
         adapter.getProfileProxy(context, object : BluetoothProfile.ServiceListener {
             override fun onServiceConnected(profile: Int, proxy: BluetoothProfile) {
                 headset = proxy as BluetoothHeadset
                 // Start voice recognition on the Bluetooth device
                 headset!!.startVoiceRecognition(device)
+                setRecognitionState(true)
                 Log.d(LOG_TAG, "Start voice recognition on the Bluetooth device(${device?.name})")
             }
 
             override fun onServiceDisconnected(profile: Int) {
                 if (headset != null) {
                     headset!!.stopVoiceRecognition(device)
+                    setRecognitionState(false)
                     Log.d(LOG_TAG, "Stop voice recognition")
                     headset = null
                 }
@@ -107,6 +102,7 @@ class BluetoothVoiceRecognition(private val context: Context, private val channe
     }
 
     fun stopVoiceRecognition() {
+        headset?.stopVoiceRecognition(device)
         adapter.closeProfileProxy(BluetoothProfile.HEADSET, headset)
     }
 
@@ -125,6 +121,9 @@ class BluetoothVoiceRecognition(private val context: Context, private val channe
         adapter.startDiscovery()
     }
 
+    private fun setRecognitionState(state: Boolean){
+        voiceRecognitionCallback.setRecognitionState(state)
+    }
     @RequiresApi(Build.VERSION_CODES.KITKAT)
     fun pairDevice(device: BluetoothDevice): Boolean {
         return try {
@@ -132,6 +131,8 @@ class BluetoothVoiceRecognition(private val context: Context, private val channe
         } catch (e: Exception) {
             e.printStackTrace()
             false
+        } finally {
+            Log.d(LOG_TAG, "------- Pair Device -------")
         }
     }
 
@@ -162,7 +163,12 @@ class BluetoothVoiceRecognition(private val context: Context, private val channe
                 )
                 if (state == BluetoothHeadset.STATE_AUDIO_CONNECTED) {
                     // Voice recognition has started successfully
+                    setRecognitionState(true)
                     Log.d(LOG_TAG, "Voice recognition has started successfully")
+                } else if (state == BluetoothHeadset.STATE_AUDIO_DISCONNECTED) {
+                    // Voice recognition has ended
+                    setRecognitionState(false)
+                    Log.d(LOG_TAG, "Voice recognition has ended")
                 }
             } else if (BluetoothDevice.ACTION_FOUND == action) {
                 val scannedDevice =
@@ -176,7 +182,7 @@ class BluetoothVoiceRecognition(private val context: Context, private val channe
                     if (!adapter.bondedDevices.contains(scannedDevice)) {
                         val paired = pairDevice(scannedDevice)
                         if (paired) {
-                            channel.invokeMethod("targetAddress", targetAddress)
+                            voiceRecognitionCallback.setTargetAddress(targetAddress)
                         }
                     }
                 } else if (scannedDevice.address == targetAddress) {

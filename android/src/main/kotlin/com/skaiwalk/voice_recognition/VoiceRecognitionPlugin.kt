@@ -2,6 +2,7 @@ package com.skaiwalk.voice_recognition
 
 import android.Manifest
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.speech.RecognizerIntent
@@ -20,8 +21,8 @@ import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
 import io.flutter.plugin.common.PluginRegistry
-import java.util.*
-import kotlin.properties.Delegates
+import java.util.Observable
+import java.util.Observer
 
 private const val REQUEST_RECORD_AUDIO_PERMISSION = 200
 
@@ -29,7 +30,7 @@ private const val REQUEST_RECORD_AUDIO_PERMISSION = 200
 class VoiceRecognitionPlugin : FlutterPlugin, MethodCallHandler,
     PluginRegistry.RequestPermissionsResultListener, ActivityAware, Observer {
     private lateinit var channel: MethodChannel
-
+    private lateinit var context: Context
     private var currentActivity: Activity? = null
 
     private var audioPermissionGranted: Boolean = false
@@ -45,14 +46,14 @@ class VoiceRecognitionPlugin : FlutterPlugin, MethodCallHandler,
     override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
         this.channel = MethodChannel(flutterPluginBinding.binaryMessenger, "voice_recognition")
         channel.setMethodCallHandler(this)
-
-        recognizer = SpeechRecognizer.createSpeechRecognizer(flutterPluginBinding.applicationContext)
+        context = flutterPluginBinding.applicationContext
+        recognizer =
+            SpeechRecognizer.createSpeechRecognizer(context)
         recognizer.setRecognitionListener(VoiceRecognizer(recognizer, recognitionIntent))
-
         MyObservable.instance.addObserver(this)
 
-        bluetoothVoiceRecognition = BluetoothVoiceRecognition(flutterPluginBinding.applicationContext, channel)
-        bluetoothVoiceRecognition.init()
+        bluetoothVoiceRecognition = BluetoothVoiceRecognition()
+        bluetoothVoiceRecognition.doInit(context, recognitionCallback)
     }
 
     override fun onMethodCall(call: MethodCall, result: Result) {
@@ -63,7 +64,7 @@ class VoiceRecognitionPlugin : FlutterPlugin, MethodCallHandler,
                 val mode = arguments["mode"] as Int
                 val bluetoothAddress = arguments["bluetoothAddress"] as String
 
-                if (!bluetoothVoiceRecognition.startVoiceRecognition(bluetoothAddress)) {
+                if (!bluetoothVoiceRecognition.startVoiceRecognition(context, bluetoothAddress)) {
                     intentMode = 0
                     result.success(false)
                     return
@@ -75,14 +76,20 @@ class VoiceRecognitionPlugin : FlutterPlugin, MethodCallHandler,
                         result.success(true)
                         1
                     }
+
                     2 -> {
                         result.success(true)
                         2
                     }
-                    else -> 0
+
+                    else -> {
+                        result.success(false)
+                        0
+                    }
                 }
 
             }
+
             "stopVoiceRecognition" -> {
                 if (intentMode == 1) {
                     bluetoothVoiceRecognition.stopVoiceRecognition()
@@ -93,11 +100,13 @@ class VoiceRecognitionPlugin : FlutterPlugin, MethodCallHandler,
 //                    result.success("Stop Voice Recognition to sound")
                 }
             }
+
             "pairBluetoothDeviceByName" -> {
                 val bluetoothName = (arguments as Map<*, *>)["bluetoothName"] as String
                 bluetoothVoiceRecognition.pairBluetoothDeviceByName(bluetoothName)
                 result.success("[onMethodCall]Pair Bluetooth Device By Name:$bluetoothName")
             }
+
             else -> {
                 result.notImplemented()
             }
@@ -106,6 +115,7 @@ class VoiceRecognitionPlugin : FlutterPlugin, MethodCallHandler,
 
     override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
         channel.setMethodCallHandler(null)
+        bluetoothVoiceRecognition.deInit(binding.applicationContext)
     }
 
     override fun onRequestPermissionsResult(
@@ -124,7 +134,6 @@ class VoiceRecognitionPlugin : FlutterPlugin, MethodCallHandler,
     }
 
     override fun onDetachedFromActivity() {
-        bluetoothVoiceRecognition.deInit()
         currentActivity = null
     }
 
@@ -137,14 +146,6 @@ class VoiceRecognitionPlugin : FlutterPlugin, MethodCallHandler,
         currentActivity = binding.activity
         binding.addRequestPermissionsResultListener(this)
         requestAudioPermission()
-
-//        recognizer = SpeechRecognizer.createSpeechRecognizer(currentActivity)
-//        recognizer.setRecognitionListener(VoiceRecognizer(recognizer, recognitionIntent))
-//
-//        MyObservable.instance.addObserver(this)
-//
-//        bluetoothVoiceRecognition = BluetoothVoiceRecognition(currentActivity!!, channel)
-//        bluetoothVoiceRecognition.init()
     }
 
     override fun onDetachedFromActivityForConfigChanges() {
@@ -192,5 +193,15 @@ class VoiceRecognitionPlugin : FlutterPlugin, MethodCallHandler,
             return
         }
         channel.invokeMethod("onReturnResult", MyObservable.instance.textResult)
+    }
+
+    private var recognitionCallback: VoiceRecognitionCallback = object : VoiceRecognitionCallback {
+        override fun setRecognitionState(state: Boolean) {
+            channel.invokeMethod("setRecognitionState", state)
+        }
+
+        override fun setTargetAddress(address: String) {
+            channel.invokeMethod("targetAddress", address)
+        }
     }
 }

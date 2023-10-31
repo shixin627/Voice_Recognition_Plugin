@@ -47,4 +47,8 @@ abstract class VoiceRecognitionPlatform extends PlatformInterface {
   Stream<String> get recognitionResultStream {
     return const Stream.empty();
   }
+
+  Stream<bool> get recognitionStateStream {
+    return const Stream.empty();
+  }
 }
