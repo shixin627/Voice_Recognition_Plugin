@@ -5,6 +5,7 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.os.Build
 import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
 import android.util.Log
@@ -24,11 +25,12 @@ import io.flutter.plugin.common.PluginRegistry
 import java.util.Observable
 import java.util.Observer
 
+
 private const val REQUEST_RECORD_AUDIO_PERMISSION = 200
 
 /** VoiceRecognitionPlugin */
 class VoiceRecognitionPlugin : FlutterPlugin, MethodCallHandler,
-    PluginRegistry.RequestPermissionsResultListener, ActivityAware, Observer {
+    PluginRegistry.RequestPermissionsResultListener, ActivityAware { //Observer
     private lateinit var channel: MethodChannel
     private lateinit var context: Context
     private var currentActivity: Activity? = null
@@ -39,7 +41,7 @@ class VoiceRecognitionPlugin : FlutterPlugin, MethodCallHandler,
         RecognizerIntent.EXTRA_LANGUAGE_MODEL,
         RecognizerIntent.LANGUAGE_MODEL_FREE_FORM
     )
-    private lateinit var recognizer: SpeechRecognizer
+//    private lateinit var recognizer: SpeechRecognizer
     private lateinit var bluetoothVoiceRecognition: BluetoothVoiceRecognition
     private var intentMode: Int = 0
 
@@ -47,10 +49,10 @@ class VoiceRecognitionPlugin : FlutterPlugin, MethodCallHandler,
         this.channel = MethodChannel(flutterPluginBinding.binaryMessenger, "voice_recognition")
         channel.setMethodCallHandler(this)
         context = flutterPluginBinding.applicationContext
-        recognizer =
-            SpeechRecognizer.createSpeechRecognizer(context)
-        recognizer.setRecognitionListener(VoiceRecognizer(recognizer, recognitionIntent))
-        MyObservable.instance.addObserver(this)
+//        recognizer =
+//            SpeechRecognizer.createSpeechRecognizer(context)
+//        recognizer.setRecognitionListener(VoiceRecognizer(recognizer, recognitionIntent))
+//        MyObservable.instance.addObserver(this)
 
         bluetoothVoiceRecognition = BluetoothVoiceRecognition()
         bluetoothVoiceRecognition.doInit(context, recognitionCallback)
@@ -72,7 +74,7 @@ class VoiceRecognitionPlugin : FlutterPlugin, MethodCallHandler,
 
                 intentMode = when (mode) {
                     1 -> {
-                        startRecognition()
+//                        startRecognition()
                         result.success(true)
                         1
                     }
@@ -93,7 +95,7 @@ class VoiceRecognitionPlugin : FlutterPlugin, MethodCallHandler,
             "stopVoiceRecognition" -> {
                 if (intentMode == 1) {
                     bluetoothVoiceRecognition.stopVoiceRecognition()
-                    stopRecognition()
+//                    stopRecognition()
 //                    result.success("Stop Voice Recognition to Text")
                 } else if (intentMode == 2) {
                     bluetoothVoiceRecognition.stopVoiceRecognition()
@@ -175,25 +177,25 @@ class VoiceRecognitionPlugin : FlutterPlugin, MethodCallHandler,
         }
     }
 
-    private fun startRecognition() {
-        checkAudioPermission()
-        recognizer.startListening(recognitionIntent)
-    }
+//    private fun startRecognition() {
+//        checkAudioPermission()
+//        recognizer.startListening(recognitionIntent)
+//    }
+//
+//    private fun stopRecognition() {
+//        recognizer.stopListening()
+//    }
 
-    private fun stopRecognition() {
-        recognizer.stopListening()
-    }
-
-    override fun update(o: Observable?, arg: Any?) {
-        Log.d("VoiceRecognitionPlugin", "MyObservable changed~${MyObservable.instance.textResult}")
-        if (MyObservable.instance.textResult == "/cmd/end") {
-            bluetoothVoiceRecognition.stopVoiceRecognition()
-            stopRecognition()
-            channel.invokeMethod("onReturnCmd", "/cmd/end")
-            return
-        }
-        channel.invokeMethod("onReturnResult", MyObservable.instance.textResult)
-    }
+//    override fun update(o: Observable?, arg: Any?) {
+//        Log.d("VoiceRecognitionPlugin", "MyObservable changed~${MyObservable.instance.textResult}")
+//        if (MyObservable.instance.textResult == "/cmd/end") {
+//            bluetoothVoiceRecognition.stopVoiceRecognition()
+//            stopRecognition()
+//            channel.invokeMethod("onReturnCmd", "/cmd/end")
+//            return
+//        }
+//        channel.invokeMethod("onReturnResult", MyObservable.instance.textResult)
+//    }
 
     private var recognitionCallback: VoiceRecognitionCallback = object : VoiceRecognitionCallback {
         override fun setRecognitionState(state: Boolean) {

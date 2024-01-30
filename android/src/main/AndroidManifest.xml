@@ -1,9 +1,15 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
   package="com.skaiwalk.voice_recognition">
 
-    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
-    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+    <uses-permission android:name="android.permission.BLUETOOTH" />
+
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+
     <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
+
+    <uses-permission android:name="android.permission.BLUETOOTH_ADVERTISE" />
+
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
     <uses-permission android:name="android.permission.BROADCAST_STICKY" />
     <uses-permission android:name="android.permission.MODIFY_PHONE_STATE" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />

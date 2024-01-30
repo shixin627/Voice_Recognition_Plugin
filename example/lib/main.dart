@@ -19,7 +19,7 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  final String _bluetoothAddress = "17:E9:9E:CA:37:52";
+  final String _bluetoothAddress = "D2:77:80:2F:41:44";
   String _textResult = '...';
   bool _isListening = false;
   final _voiceRecognitionPlugin = VoiceRecognition();
